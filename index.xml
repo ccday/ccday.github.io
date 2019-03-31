@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Home on Collin Day</title>
+    <link>https://ccd.dev/</link>
+    <description>Recent content in Home on Collin Day</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 30 Mar 2019 23:37:24 -0400</lastBuildDate>
+    
+	<atom:link href="https://ccd.dev/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>How to Optimize Transfer Between S3 and EC2</title>
+      <link>https://ccd.dev/posts/optimize-s3-ec2-transfer/</link>
+      <pubDate>Sat, 30 Mar 2019 23:37:24 -0400</pubDate>
+      
+      <guid>https://ccd.dev/posts/optimize-s3-ec2-transfer/</guid>
+      <description>In this article we&amp;rsquo;ll examine how to achieve consistent transfer speeds (including writing to disk) of around 500 Megabytes per second between S3 and EC2. The methodology described here is being used successfully in production.
+We&amp;rsquo;ll begin by looking at the hardware required, then move on to thinking about software. Throughout this article we&amp;rsquo;ll also consider some of the trade-offs and potential downsides of this approach. If you&amp;rsquo;d like to skip the reasoning and just see the final hardware configuration and software recommendations, jump down to the Conclusions section.</description>
+    </item>
+    
+    <item>
+      <title>Portfolio</title>
+      <link>https://ccd.dev/portfolio/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://ccd.dev/portfolio/</guid>
+      <description>Go is one of my favorite languages. I like its simple syntax, efficient concurrency, and comprehensive standard library:
+ Gopensky | Go bindings for OpenSky REST API. This library requests and deserializes state vectors from the OpenSky API. The OpenSky API provides real time flight data. I plan to use this in a larger project that will utilize Tile38 for querying/geofencing flights in real time using a web interface and websockets.</description>
+    </item>
+    
+  </channel>
+</rss>

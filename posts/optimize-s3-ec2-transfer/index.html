@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>How to Optimize Transfer Between S3 and EC2 | Collin Day</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+      <li><a href="/">Home</a></li>
+      
+      <li><a href="/portfolio">Portfolio</a></li>
+      
+    </ul>
+    <hr/>
+    </nav>
+
+<div class="article-meta">
+<h1><span class="title">How to Optimize Transfer Between S3 and EC2</span></h1>
+
+<h2 class="date">2019/03/30</h2>
+</div>
+
+<main>
+
+
+<p>In this article we&rsquo;ll examine how to achieve consistent transfer speeds (including writing to disk) of around 500
+Mega<em>bytes</em> per second between S3 and EC2. The methodology described here is being used successfully in production.</p>
+
+<p>We&rsquo;ll begin by looking at the hardware required, then move on to thinking about software. Throughout this article we&rsquo;ll
+also consider some of the trade-offs and potential downsides of this approach. If you&rsquo;d like to skip the reasoning and
+just see the final hardware configuration and software recommendations, jump down to the <a href="#conclusions">Conclusions</a>
+section.</p>
+
+<h2 id="hardware">Hardware</h2>
+
+<p>As a brief refresher, EC2 allows us to provision virtual servers which in AWS parlance are called <strong>instances</strong>. The
+main type of storage used for instances is network-attached block storage called EBS. EBS is provisioned in units called
+<strong>volumes</strong>.</p>
+
+<p>An EC2 instance&rsquo;s <strong>instance type</strong> determines its hardware specifications. The same applies to a volume&rsquo;s <strong>volume
+type</strong>. We&rsquo;re going to select a combination of instance type and volume type that will maximize performance by avoiding
+bottlenecks and prioritizing the specs that matter.</p>
+
+<p>Let&rsquo;s consider how bytes are going to get from S3 onto our disk. They&rsquo;re going to be requested from S3 via the network,
+transferred into RAM by way of the CPU, then written to the EBS volume. Let&rsquo;s work backwards starting from the EBS
+volume.</p>
+
+<p>We have two main choices to make when it comes to EBS: volume type and size. For volume types there are:</p>
+
+<ul>
+<li><strong>gp2</strong> general purpose SSD storage</li>
+<li><strong>io1</strong> SSD storage with provisioned (guaranteed) IOPS</li>
+<li><strong>st1</strong> magnetic storage with high throughput</li>
+<li><strong>sc1</strong> cheap and slow magnetic storage</li>
+</ul>
+
+<p>We&rsquo;re going to eliminate io1 and sc1 off the bat. io1 is very expensive and to take advantage of its performance the
+volume must be attached to a Nitro-enabled instance. sc1 is too slow for what we want.</p>
+
+<p>That leaves gp2 and st1 to compare. gp2 volumes have more IOPS which is good for small, random IO. st1 volumes have
+higher max throughput and are better for large, sequential IO. st1 is a better fit for our goal of maximizing transfer
+speed.</p>
+
+<p>The next question is how big of an st1 volume do we want? EBS ties performance to volume size. The smallest (and
+therefore cheapest) st1 volume that guarantees the max 500 MB/s throughput at all times is 12.5 TiB (12800 MiB).
+Therefore, we&rsquo;re going to use a 12.5 TiB st1 volume.</p>
+
+<p>Caveat emptor: this configuration sacrifices random IO for sequential read and write speed. A gp2 volume must still be
+used as the instance&rsquo;s boot drive.</p>
+
+<p>The next thing to consider is CPU, RAM, and network interface, thus moving on to EC2 options. EC2 instances also have a
+max EBS bandwidth. We&rsquo;re going to want an instance with at least 500 MB/s (4000 Mb/s) of EBS bandwidth to avoid
+bottlenecking. That means we need an EBS-optimized instance. We also need at least 500 MB/s of network bandwidth.
+Many EC2 instances have network performance &ldquo;up to&rdquo; a certain value, or may just be classified as &ldquo;low&rdquo;, &ldquo;moderate&rdquo;, or
+&ldquo;high.&rdquo; In order to maintain consistent transfer speed, we&rsquo;re going to choose an instance type with a hard value of at
+least 500 MB/s.</p>
+
+<p>There are quite a few instance types that meet the above requirements. The most cost-effective that I&rsquo;ve been able to
+find is the c4.8xlarge with:</p>
+
+<ul>
+<li>60 GiB of RAM</li>
+<li>36 vCPUs</li>
+<li>10 Gigabit network interface</li>
+<li>4000 Mbps of dedicated EBS bandwidth</li>
+</ul>
+
+<p>If your needs differ, any instance type that meets the above requirements to avoid bottlenecking should be able to
+achieve the same performance.</p>
+
+<p>That wraps up hardware considerations - let&rsquo;s move on to software.</p>
+
+<h2 id="software">Software</h2>
+
+<p>Like many other AWS products, S3 is designed to scale horizontally. This means that in order to achieve fast transfers,
+we&rsquo;ll need to take advantage of multipart downloads/uploads with concurrent requests. Therefore, our software needs to
+either be asynchronous (Node.js being an example), or multithreaded (Go being an example).</p>
+
+<p>Any implementation that is able to make concurrent requests to S3 in order to perform a multipart download/upload should
+work, but I&rsquo;m going to use Go as an example here because the AWS SDK for Go includes a package called
+<a href="https://docs.aws.amazon.com/sdk-for-go/api/service/s3/s3manager"><code>s3manager</code></a> that provides this functionality with a
+very simple and easy to use API.</p>
+
+<p>A deep dive into <code>s3manager</code> is outside the scope of this article, but the following settings have worked for me:</p>
+
+<ul>
+<li>Default <code>PartSize</code></li>
+<li><code>Concurrency</code> equal to the number of logical cores (vCPUs on EC2)</li>
+</ul>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<p>In summary, I&rsquo;ve found a c4.8xlarge with a 12.5 TiB st1 volume to provide a consistent 500 MB/s of transfer from and to
+S3 when running software that takes advantage of S3&rsquo;s horizontal scalability through concurrent requests such as the AWS
+SDK for Go&rsquo;s <code>s3manager</code> package.</p>
+
+<p>Thanks for reading - I hope this article has been helpful, interesting, or both. Please feel free to contact me with
+questions, comments, or criticism.</p>
+
+</main>
+
+  <footer>
+  
+  
+  <hr/>
+  &copy; Collin Day 2019 | <a href="https://github.com/ccday">GitHub</a> | <a href="https://www.linkedin.com/in/ccday/">LinkedIn</a>
+  
+  </footer>
+  </body>
+</html>
+
