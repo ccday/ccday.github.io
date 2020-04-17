@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Phoenix LiveView: Ideal for Resource Constrained Environments - Collin Day</title><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Phoenix LiveView: Ideal for Resource Constrained Environments" />
+<meta property="og:description" content="Phoenix LiveView is an innovative library for the Phoenix Web Framework that enables rich, highly interactive, UI experiences for web applications." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://ccd.dev/posts/phx-liveview/" />
+<meta property="article:published_time" content="2020-04-16T20:07:22-04:00" />
+<meta property="article:modified_time" content="2020-04-16T20:07:22-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Phoenix LiveView: Ideal for Resource Constrained Environments"/>
+<meta name="twitter:description" content="Phoenix LiveView is an innovative library for the Phoenix Web Framework that enables rich, highly interactive, UI experiences for web applications."/>
+<link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,300italic,400italic|Raleway:200,300" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ccd.dev/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://ccd.dev/css/main.css" /><link rel="stylesheet" type="text/css" href="https://ccd.dev/css/dark.css" media="(prefers-color-scheme: dark)" />
+
+	
+	<script src="https://ccd.dev/js/main.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper post">
+		<div class="header">
+	<h1 class="site-title"><a href="https://ccd.dev/">Collin Day</a></h1>
+	<div class="site-description"><nav class="nav social">
+			<ul class="flat"></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">All posts</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post-header">
+			<h1 class="title">Phoenix LiveView: Ideal for Resource Constrained Environments</h1>
+			<div class="meta">Posted at &mdash; Apr 16, 2020</div>
+		</div>
+
+		<div class="markdown">
+			<p><a href="https://github.com/phoenixframework/phoenix_live_view">Phoenix LiveView</a> is an innovative library for the
+<a href="https://www.phoenixframework.org">Phoenix Web Framework</a> that enables rich, highly interactive, UI experiences for web
+applications. In this article I&rsquo;ll explain why LiveView is an ideal fit for environments with limited bandwidth,
+compute capacity, and latency.</p>
+<h3 id="the-traditional-single-page-application-spa">The Traditional Single Page Application (SPA)</h3>
+<p>Let&rsquo;s begin by reviewing the components of a very common web app architecture today:</p>
+<ol>
+<li>A frontend written using a JavaScript SPA framework such as React, Vue, Angular, Ember, etc.</li>
+<li>A RESTful API, often using JSON over HTTP for serialization and transport</li>
+<li>Backend services and stores that implement the domain logic</li>
+</ol>
+<p>Essentially, we have a layered architecture where the user interface executes on the client (as JavaScript in the
+browser). This served as an important evolution from server-side MVC frameworks (such as Rails) which render the UI on
+the server then ship HTML to the browser. A primary benefit of moving the UI to the client was greater responsiveness
+and interactivity. These frameworks helped to bring the same sort of features previously found in desktop applications
+to the web.</p>
+<p>However, like anything, there are some trade-offs that come with SPAs. Data-intensive applications will often require
+many HTTP requests to the API. This is especially apparent with novel representations (such as graph-based) that split
+the data required to assemble a coherent model across many API resources or query results. Other API technologies, such
+as GraphQL, try to solve these problems (sometimes known as overfetching or underfetching) by providing a more
+sophisticated query language for API resources. However, the data still needs to be sent over the wire.</p>
+<p>These problems become especially apparent in the difficult environments that some users, such as many in the
+defense community, operate in. Take the following example scenario:</p>
+<ul>
+<li>The user has a spotty satellite link back to the application servers, with low bandwidth and high latency</li>
+<li>The user&rsquo;s browser is running on underpowered hardware, such as a thin client or tablet</li>
+<li>The user&rsquo;s browser is outdated and lacks support for the JavaScript functionality required by the application</li>
+</ul>
+<p>Most SPAs will struggle to maintain a good user experience in this environment:</p>
+<ul>
+<li>Shipping a large JavaScript bundle to the client makes the first load of the application slow</li>
+<li>Handling loss of connectivity gracefully while keeping state synchronized is difficult and requires developer expertise</li>
+<li>Advanced features implemented in JS will stress the capabilities of underpowered clients or simply fail if not supported</li>
+<li>A high volume of requests back to the API will stress available bandwidth and hinder responsiveness</li>
+</ul>
+<p>So, what&rsquo;s the solution? We could move back to server side frameworks such as Rails, but wouldn&rsquo;t it be nice if we could
+keep all of the benefits of the SPA architecture while addressing the problems above?</p>
+<h3 id="enter-phoenix-liveview">Enter Phoenix LiveView</h3>
+<p>Phoenix is indeed a server-side MVC framework in the same vein as Rails. However, the power of the Elixir language
+(and its underlying Erlang BEAM virtual machine) give Phoenix highly performant and scalable real-time capabilities.
+LiveView builds on top of these capabilities to bring the same advantages of JavaScript-based SPAs to the server:</p>
+<ol>
+<li>LiveView maintains a persistent WebSocket connection between each client and the server</li>
+<li>When application state changes (e.g. from some user interaction or an update from a backing service) LiveView
+computes a minimal diff from the client&rsquo;s current state to the new state and sends that diff over the wire</li>
+<li>The client displays the updated state to the user</li>
+</ol>
+<p>The vast majority of the application logic is executed on the server, on powerful hardware and close to the data. This
+eliminates the need to send large JavaScript bundles down to the client. It also greatly reduces the compute
+requirements of the client - it pretty much just needs to be able to render HTML. LiveView handles connection failures
+out of the box by reconnecting to the server automatically. And finally, and most importantly, because LiveView only
+sends diffs of dynamic state, only a minimal amount of bandwidth is required and high latency has less of an impact.</p>
+<p>All of these qualities make LiveView ideal for applications that need advanced interactivity and real-time capabilities
+and have users in resource constrained and unreliable environments.</p>
+<p>For more info, check out this
+<a href="https://dockyard.com/blog/2018/12/12/phoenix-liveview-interactive-real-time-apps-no-need-to-write-javascript">article</a>
+and <a href="https://www.youtube.com/watch?v=8xJzHq8ru0M">talk</a>, both by Chris McCord, the creator of Phoenix.</p>
+
+		</div>
+
+		<div class="post-tags">
+			
+				
+			
+		</div>
+		</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> <a href="https://github.com/vividvilla/ezhil">Ezhil theme</a> | Built with <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+
+
+</body>
+</html>

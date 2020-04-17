@@ -1,35 +1,28 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://ccd.dev/posts/optimize-s3-ec2-transfer/</loc>
-    <lastmod>2019-03-30T23:37:24-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://ccd.dev/categories/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>https://ccd.dev/</loc>
-    <lastmod>2019-03-30T23:37:24-04:00</lastmod>
+    <lastmod>2020-04-16T20:07:22-04:00</lastmod>
   </url>
   
   <url>
-    <loc>https://ccd.dev/portfolio/</loc>
+    <loc>https://ccd.dev/posts/phx-liveview/</loc>
+    <lastmod>2020-04-16T20:07:22-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://ccd.dev/posts/</loc>
-    <lastmod>2019-03-30T23:37:24-04:00</lastmod>
-    <priority>0</priority>
+    <lastmod>2020-04-16T20:07:22-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://ccd.dev/categories/</loc>
   </url>
   
   <url>
     <loc>https://ccd.dev/tags/</loc>
-    <priority>0</priority>
   </url>
   
 </urlset>
